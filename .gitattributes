@@ -1,0 +1,14 @@
+* text=auto
+
+# Windows 批处理必须 CRLF，且为 GBK 编码
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# 源码与文档用 LF
+*.as text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+
+# 图片按二进制处理
+*.jpg binary
+*.png binary
