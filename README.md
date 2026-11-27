@@ -8,15 +8,24 @@
 > when the interface scale is not 1x. AS3 patch sources, build scripts and a
 > `.wbp` packer for the Oujou mod box.
 
-## 下载
+## 安装
 
-已经打好的安装包放在 [Releases](https://github.com/wumingzhiren/World-of-Tanks-CN-360-IME-Candidate-Fix/releases)：
+**偶游盒子已上架**，搜插件名即可安装：
 
-| 文件 | 说明 |
-|---|---|
-| `WoT-CN360-IME-Candidate-Fix-2.4.2.0.wbp` | 适配游戏 2.4.2.0，偶游盒子直接安装，也可解压后手动放 |
+```
+非1X缩放下输入法候选框错位修复
+```
 
-1X 缩放本来就正常，不用装。游戏换成别的版本号时，按下面「打包成 .wbp」自己打一个。
+1X 缩放本来就正常，不用装。
+
+> 本仓库**不提供**打好的 `.wbp`，只放源码、构建脚本和打包工具。
+> 原因见「许可」一节：安装包内含改动后的界面文件（源自客户端自带的 `ime.swf`），
+> 由盒子分发更合适。想自己出一份，按下面「构建」「打包成 .wbp」两步走即可，
+> 产物与上架版结构一致。
+
+手动安装：把 `ime.swf` 放到 `res_mods\<版本号>\gui\flash\`。
+
+回滚：删掉 `res_mods` 里那个 `ime.swf`，游戏自动回落到 `res\gui\flash\ime.swf`（原版）。
 
 ## 效果
 
@@ -219,7 +228,8 @@ python scripts\build_package.py 2.4.3.0 你的昵称      # 版本 + 作者
 
 | 条目 | 内容 |
 |---|---|
-| `Files/ime.swf` | 实际替换文件（loose 模式，直铺 `res_mods`） |
+| `Files/gui/flash/ime.swf` | 实际替换文件（loose 模式，直铺 `res_mods`） |
+| `Files/原.swf` | 客户端自带原文件，仅供审核比对，`EscapePath` 里没有它所以不会安装 |
 | `wbpimg.jpg` | 列表页封面，242×235 |
 | `wbpinfo` | GB2312 的 XML 清单，`EscapePath` 决定装到哪 |
 
@@ -228,7 +238,7 @@ python scripts\build_package.py 2.4.3.0 你的昵称      # 版本 + 作者
 <Name>非1X缩放下输入法候选框错位修复</Name>
 <Version>2.4.2.0</Version>
 <Author>...</Author>
-<Url><![CDATA[https://github.com/...]]></Url>
+<Url><![CDATA[-]]></Url>                     <!-- 盒子不接受外链，上架版为 "-" -->
 <Summary><![CDATA[一句话简介]]></Summary>
 <EscapePath>
   <File Name="res_mods\2.4.2.0\gui\flash\ime.swf"/>
@@ -252,12 +262,6 @@ python scripts\build_package.py 2.4.3.0 你的昵称      # 版本 + 作者
 > 顺带一个坑：wotmod 内条目必须 stored（不压缩），deflate 会被引擎以
 > `load error: compression not supported` 拒绝。
 
-## 安装 / 回滚
-
-安装就是把 `ime.swf` 放到 `res_mods\<版本号>\gui\flash\`，或者用盒子装 `.wbp`。
-
-回滚：删掉 `res_mods` 里的 `ime.swf`，游戏自动回落到 `res\gui\flash\ime.swf`（原版）。
-
 ## 已知限制
 
 - 只有在读不到舞台矩阵时才退回字高 / 分辨率估算，此时 1X 与「字号不随缩放」的
@@ -271,6 +275,9 @@ python scripts\build_package.py 2.4.3.0 你的昵称      # 版本 + 作者
 
 代码与文档用 MIT。
 
-`ime.swf` 及其它游戏资源版权归 Wargaming.net。本仓库不含任何游戏原始资源
-（`build\` 与 `*.wbp` 均在 `.gitignore` 内）；Releases 附件里的 `.wbp` 只含修改后的
-`ime.swf`，用途是替换客户端内的同名文件，不含额外资源。详见 [LICENSE](LICENSE)。
+`ime.swf` 及其它游戏资源版权归 Wargaming.net。本仓库只含自己写的补丁源码、
+构建脚本与文档，**不含任何游戏原始资源，也不分发打包好的 `.wbp`**
+（`build\`、`*.wbp`、`*.swf` 均在 `.gitignore` 内）。
+
+成品由偶游盒子分发；需要二进制时请本地按文档自行构建，产物只留在自己机器上。
+详见 [LICENSE](LICENSE)。

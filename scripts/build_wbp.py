@@ -2,10 +2,11 @@
 """
 把 build/ime.swf 打成偶游盒子可用的 .wbp 安装包。
 
-.wbp 结构（以站内官方样例为准，见 docs/sample/）：
-    Files/ime.swf         实际替换文件（loose 模式，直铺 res_mods）
-    wbpimg.jpg            列表页封面图
-    wbpinfo               GB2312 编码的 XML 清单，EscapePath 决定装到哪
+.wbp 结构（与盒子上架版一致）：
+    Files/gui/flash/ime.swf   实际替换文件（loose 模式，直铺 res_mods）
+    Files/原.swf              原生文件，仅供审核比对，不安装
+    wbpimg.jpg                列表页封面图
+    wbpinfo                   GB2312 编码的 XML 清单，EscapePath 决定装到哪
 
 用法：
     python build_wbp.py                       # 默认版本 + 默认作者
@@ -31,7 +32,8 @@ MODE = "loose"
 
 AUTHOR = "无名氏有人用么"                       # 默认作者名，可命令行覆盖
 MOD_NAME = "非1X缩放下输入法候选框错位修复"        # 盒子列表里显示的名字
-URL = "https://github.com/wumingzhiren/World-of-Tanks-CN-360-IME-Candidate-Fix"
+# 盒子不接受外链引流，上架版此字段为 "-"；留空或改值都会进 XML，注意别填到外站
+URL = "-"
 PACKAGE_ID = "33C8ADA77A3A43BE866119AA85627691"   # 固定不变，改了就成另一个插件
 DEFAULT_VERSION = "2.4.2.0"
 MOD_VERSION = "1.0"
@@ -45,6 +47,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, ".."))
 BUILD_DIR = os.path.join(ROOT, "build")
 SWF = os.path.join(BUILD_DIR, "ime.swf")
+ORIG = os.path.join(BUILD_DIR, "ime_orig.swf")
 COVER = os.path.join(ROOT, "docs", "images", "cover-wbpimg.jpg")
 
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+\.\d+$")
@@ -120,7 +123,7 @@ def build(version=DEFAULT_VERSION, author=AUTHOR, quiet=False):
     swf = open(SWF, "rb").read()
 
     if MODE == "loose":
-        entry = "Files/ime.swf"
+        entry = "Files/gui/flash/ime.swf"
         payload = swf
         target = "res_mods\\%s\\gui\\flash\\ime.swf" % version
         note = "直铺 res_mods"
@@ -134,12 +137,23 @@ def build(version=DEFAULT_VERSION, author=AUTHOR, quiet=False):
         target = "mods\\%s\\%s" % (version, MOD_FILE)
         note = "wotmod %d 字节" % size
 
+    # 原生文件随包附带，供审核比对；EscapePath 里没有它，不会被安装
+    orig = open(ORIG, "rb").read() if os.path.exists(ORIG) else None
+
     if os.path.exists(out):
         os.remove(out)
+    S = zipfile.ZIP_STORED
     with zipfile.ZipFile(out, "w") as z:
-        z.writestr(zinfo(entry), payload)
         z.writestr(zinfo("wbpimg.jpg"), open(COVER, "rb").read())
         z.writestr(zinfo("wbpinfo"), build_info(target, version, author).encode("gb2312"))
+        if MODE == "loose":
+            z.writestr(zinfo("Files/gui/", S), b"")
+            z.writestr(zinfo("Files/gui/flash/", S), b"")
+            z.writestr(zinfo(entry), payload)
+            if orig:
+                z.writestr(zinfo("Files/原.swf"), orig)
+        else:
+            z.writestr(zinfo(entry), payload)
 
     data = open(out, "rb").read()
     result = {
@@ -148,6 +162,8 @@ def build(version=DEFAULT_VERSION, author=AUTHOR, quiet=False):
         "md5": hashlib.md5(data).hexdigest(),
         "swf_size": len(swf),
         "swf_md5": hashlib.md5(swf).hexdigest(),
+        "orig_size": len(orig) if orig else 0,
+        "orig_md5": hashlib.md5(orig).hexdigest() if orig else "",
         "entry": entry,
         "target": target,
         "note": note,
@@ -161,6 +177,8 @@ def build(version=DEFAULT_VERSION, author=AUTHOR, quiet=False):
         print("author    %s" % author)
         print("url       %s" % URL)
         print("ime.swf   %d bytes  md5 %s" % (result["swf_size"], result["swf_md5"]))
+        if orig:
+            print("原.swf    %d bytes  md5 %s（仅供比对，不安装）" % (result["orig_size"], result["orig_md5"]))
         print("entry     %s  %d bytes" % (entry, len(payload)))
         print("target    %s" % target)
         print("wbp       %d bytes  md5 %s" % (result["size"], result["md5"]))
