@@ -8,6 +8,16 @@
 > when the interface scale is not 1x. AS3 patch sources, build scripts and a
 > `.wbp` packer for the Oujou mod box.
 
+## 下载
+
+已经打好的安装包放在 [Releases](https://github.com/wumingzhiren/World-of-Tanks-CN-360-IME-Candidate-Fix/releases)：
+
+| 文件 | 说明 |
+|---|---|
+| `WoT-CN360-IME-Candidate-Fix-2.4.2.0.wbp` | 适配游戏 2.4.2.0，偶游盒子直接安装，也可解压后手动放 |
+
+1X 缩放本来就正常，不用装。游戏换成别的版本号时，按下面「打包成 .wbp」自己打一个。
+
 ## 效果
 
 3840×2160 + 2X 界面缩放，同一个「坦克游玩列表 → 添加坦克」搜索框：
