@@ -34,6 +34,28 @@
 
 <img src="docs/images/candidate-window-1to1.png">
 
+## 文件来源
+
+`ime.swf` 是**游戏自带文件**，本补丁不新增任何文件，只是用同路径的修改版覆盖它。
+
+| 项 | 值 |
+|---|---|
+| 路径 | `<游戏目录>\res\gui\flash\ime.swf` |
+| 大小 | 5,763 字节（2.4.2.0 客户端，文件日期 2025-09-10） |
+| MD5 | `8109d4f89fcc511ec1a1687f91082011` |
+
+**它不在任何 `.pkg` 里。** 该目录下 9 个 `.swf`（`ime.swf` 与 8 个 `fonts_*.swf`）全部是散装文件，客户端更新时直接落盘，所以在 `res\packages\` 里翻是找不到的。
+
+`res\packages\gui-part3.pkg` 里只有一个配套的 `gui/flash/ime.xml`（15,464 字节），内容是「Windows 输入法名称 → GFxIME 标签」的映射表（如 `Chinese (Simplified) - Microsoft Pinyin IME` → `GFxIME_Ch_Simp_MSPinyin`），负责让引擎认出当前用的是哪个输入法，不是候选框本体。
+
+自证方法（Windows）：
+
+```bat
+certutil -hashfile "<游戏目录>\res\gui\flash\ime.swf" MD5
+```
+
+输出应为 `8109d4f89fcc511ec1a1687f91082011`。包内 `Files\ime.swf` 的 MD5 是 `22743338d2bca5f8400fdc816c5f6eaf`，两者不同，差异只在那 3 个类。
+
 ## 症状
 
 - 只在**非 1X**界面缩放下出现（2X / 1.5X / 1.25X / 0.75X），1X 正常；
@@ -163,8 +185,9 @@ SWF 根节点已被引擎按界面倍率整体放大，字号再乘一次 `k` �
    copy "<游戏目录>\res\gui\flash\ime.swf" build\ime_orig.swf
    ```
 
-   没有 `res\gui\flash\ime.swf` 的老版本，用 7-Zip 打开
-   `res\packages\gui.pkg`，导出其中的 `gui/flash/ime.swf` 即可。
+   该文件是散装的（不在 `.pkg` 内），直接复制即可，不需要解包。较老的客户端如果
+   确实没有这个路径，再去 `res\packages\gui*.pkg` 里找 `gui/flash/ime.swf`
+   （2.4.2.0 这一版已确认 pkg 内没有该文件）。
 
 2. 编译：
 
@@ -217,9 +240,13 @@ python scripts\build_package.py 2.4.3.0 你的昵称      # 版本 + 作者
 ### 为什么不用 wotmod
 
 一开始打成 `mods\<版本>\xxx.wotmod`，日志里明明写着 `Mod package ... loaded`，
-但候选框一点变化都没有。`ime.swf` 是打包进游戏自带 `gui.pkg` 的既有界面文件，
-`mods` 挂载是虚拟文件层，优先级低于游戏自身资源，盖不住它
-（`mods` 里能生效的 swf 全是**新增**文件，不是覆盖）。
+但候选框一点变化都没有。
+
+原因不在 wotmod 的打包格式，而在加载层级：`ime.swf` 是 `res\` 下的**物理文件**，
+而 `mods\` 是 wotmod 的虚拟挂载层，排在 `res\` 物理文件之后，盖不住磁盘上真实存在的那个文件
+（实测：`mods` 里只对**新增**资源生效，覆盖 `ime.swf` 无效，三次 `loaded` 都无效果）。
+
+资源优先级从高到低大致是 `res_mods\<版本>` > `res`（散装）> `res\packages\*.pkg`。
 `res_mods` 是硬覆盖，这条路和盒子自己替换 `battle.swf` / `lobby.swf` 一致。
 
 > 顺带一个坑：wotmod 内条目必须 stored（不压缩），deflate 会被引擎以
@@ -242,5 +269,8 @@ python scripts\build_package.py 2.4.3.0 你的昵称      # 版本 + 作者
 
 ## 许可
 
-代码与文档用 MIT。游戏资源（`ime.swf`、`gui.pkg` 等）版权归 Wargaming.net，
-本仓库不包含、也不分发这些文件。详见 [LICENSE](LICENSE)。
+代码与文档用 MIT。
+
+`ime.swf` 及其它游戏资源版权归 Wargaming.net。本仓库不含任何游戏原始资源
+（`build\` 与 `*.wbp` 均在 `.gitignore` 内）；Releases 附件里的 `.wbp` 只含修改后的
+`ime.swf`，用途是替换客户端内的同名文件，不含额外资源。详见 [LICENSE](LICENSE)。
