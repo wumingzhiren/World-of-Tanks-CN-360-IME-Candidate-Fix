@@ -12,10 +12,15 @@
 import os
 import sys
 
+# 控制台能正常显示中文就沿用它（中文 Windows 默认 GBK），
+# 显示不了（比如被重定向到只认 UTF-8 的终端）才切到 UTF-8
 try:
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    "中文".encode(sys.stdout.encoding or "ascii")
 except Exception:
-    pass
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
