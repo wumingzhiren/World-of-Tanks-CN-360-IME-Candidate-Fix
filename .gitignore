@@ -14,3 +14,6 @@ _originals/
 __pycache__/
 *.pyc
 *.log
+
+# 预览面板生成的临时 HTML
+*.html
